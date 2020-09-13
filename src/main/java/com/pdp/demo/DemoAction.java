@@ -1,10 +1,10 @@
 package com.pdp.demo;
 
 import com.pdp.demo.service.IDemoService;
-import com.pdp.mvcframework.annotation.WAutowired;
-import com.pdp.mvcframework.annotation.WController;
-import com.pdp.mvcframework.annotation.WRequestMapping;
-import com.pdp.mvcframework.annotation.WRequestParam;
+import com.pdp.mvcframework.annotation.SPAutowired;
+import com.pdp.mvcframework.annotation.SPController;
+import com.pdp.mvcframework.annotation.SPRequestMapping;
+import com.pdp.mvcframework.annotation.SPRequestParam;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -12,16 +12,16 @@ import java.io.IOException;
 
 
 //虽然，用法一样，但是没有功能
-@WController
-@WRequestMapping("/demo")
+@SPController
+@SPRequestMapping("/demo")
 public class DemoAction {
 
-  	@WAutowired
+  	@SPAutowired
 	private IDemoService demoService;
 
-	@WRequestMapping("/query")
+	@SPRequestMapping("/query")
 	public void query(HttpServletRequest req, HttpServletResponse resp,
-					  @WRequestParam("name") String name){
+					  @SPRequestParam("name") String name){
 		String result = demoService.get(name);
 //		String result = "My name is " + name;
 		try {
@@ -31,9 +31,9 @@ public class DemoAction {
 		}
 	}
 
-	@WRequestMapping("/add")
+	@SPRequestMapping("/add")
 	public void add(HttpServletRequest req, HttpServletResponse resp,
-                    @WRequestParam("a") Integer a, @WRequestParam("b") Integer b){
+					@SPRequestParam("a") Integer a, @SPRequestParam("b") Integer b){
 		try {
 			resp.getWriter().write(a + "+" + b + "=" + (a + b));
 		} catch (IOException e) {
@@ -41,9 +41,9 @@ public class DemoAction {
 		}
 	}
 
-	@WRequestMapping("/sub")
+	@SPRequestMapping("/sub")
 	public void add(HttpServletRequest req, HttpServletResponse resp,
-                    @WRequestParam("a") Double a, @WRequestParam("b") Double b){
+					@SPRequestParam("a") Double a, @SPRequestParam("b") Double b){
 		try {
 			resp.getWriter().write(a + "-" + b + "=" + (a - b));
 		} catch (IOException e) {
@@ -51,8 +51,8 @@ public class DemoAction {
 		}
 	}
 
-	@WRequestMapping("/remove")
-	public String remove(@WRequestParam("id") Integer id){
+	@SPRequestMapping("/remove")
+	public String remove(@SPRequestParam("id") Integer id){
 		return "" + id;
 	}
 
