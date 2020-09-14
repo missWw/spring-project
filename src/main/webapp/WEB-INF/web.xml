@@ -7,7 +7,7 @@
 	<display-name>Gupao Web Application</display-name>
 	<servlet>
 		<servlet-name>wyj-mvc</servlet-name>
-		<servlet-class>com.pdp.mvcframework.v1.servlet.DispatchServlet</servlet-class>
+		<servlet-class>com.pdp.mvcframework.mvcweb.v2.servlet.SPDispatchServlet</servlet-class>
 		<init-param>
 			<param-name>contextConfigLocation</param-name>
 			<param-value>application.properties</param-value>

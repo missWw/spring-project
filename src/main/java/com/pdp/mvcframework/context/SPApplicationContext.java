@@ -45,6 +45,7 @@ public class SPApplicationContext {
             String beanName = entry.getKey();
 
             getBean(beanName);
+
         }
 
     }
@@ -52,7 +53,7 @@ public class SPApplicationContext {
     private void doRegistBeanDefinition(List<SPBeanDefinition> SPBeanDefinitions) throws Exception {
 
         for (SPBeanDefinition SPBeanDefinition : SPBeanDefinitions) {
-            if (beanDefinitionMap.containsKey(SPBeanDefinition.getBeanClassName()) || beanDefinitionMap.containsKey(SPBeanDefinition.getFactoryBeanName())) {
+            if (beanDefinitionMap.containsKey(SPBeanDefinition.getFactoryBeanName())) {
                 throw new Exception("this" + SPBeanDefinition.getFactoryBeanName() + "is Exist");
             }
             beanDefinitionMap.put(SPBeanDefinition.getFactoryBeanName(), SPBeanDefinition);
@@ -69,6 +70,8 @@ public class SPApplicationContext {
         SPBeanDefinition beanDefinition = this.beanDefinitionMap.get(beanName);
         //2：反射实例化
         Object instance = instantinitBean(beanName, beanDefinition);
+
+        System.out.println("beanName:"+beanName+"  对应的实例："+instance);
 
         //3：封装成BeanWrapper
         SPBeanWrapper beanWrapper = new SPBeanWrapper(instance);
@@ -130,14 +133,17 @@ public class SPApplicationContext {
         String className = beanDefinition.getBeanClassName();
         Object instance = null;
         try {
-            if(factoryBeanObjectCache.containsKey(beanDefinition.getFactoryBeanName())
-                    || factoryBeanObjectCache.containsKey(beanDefinition.getBeanClassName())){
-                //如果同一个
-
+            String  factoryBeanName = beanDefinition.getFactoryBeanName();
+            String  beanClassName = beanDefinition.getBeanClassName();
+            if(factoryBeanObjectCache.containsKey(beanClassName) || factoryBeanObjectCache.containsKey(factoryBeanName)){
+                //如果同一个BeanDefinition  说明已经有了缓存
+                instance = factoryBeanObjectCache.containsKey(beanClassName) ?  factoryBeanObjectCache.get(beanClassName) : factoryBeanObjectCache.get(factoryBeanName);
+                this.factoryBeanObjectCache.put(beanClassName, instance);
+            }else {
+                Class clazz = Class.forName(className);
+                instance = clazz.newInstance();
+                this.factoryBeanObjectCache.put(beanClassName, instance);
             }
-            Class clazz = Class.forName(className);
-            instance = clazz.newInstance();
-            this.factoryBeanObjectCache.put(beanName, instance);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (IllegalAccessException e) {
@@ -152,5 +158,13 @@ public class SPApplicationContext {
 
     public Object getBean(Class<?> beanClass) {
         return getBean(beanClass.getName());
+    }
+
+    public int getBeanDefinitionCount() {
+        return this.beanDefinitionMap.size();
+    }
+
+    public String[] getBeanDefinitionNames() {
+        return this.beanDefinitionMap.keySet().toArray(new String[this.beanDefinitionMap.size()]);
     }
 }

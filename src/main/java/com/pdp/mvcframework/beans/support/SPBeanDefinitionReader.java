@@ -1,6 +1,7 @@
 package com.pdp.mvcframework.beans.support;
 
 import com.pdp.mvcframework.annotation.SPController;
+import com.pdp.mvcframework.annotation.SPRequestMapping;
 import com.pdp.mvcframework.annotation.SPService;
 import com.pdp.mvcframework.beans.config.SPBeanDefinition;
 
@@ -37,10 +38,11 @@ public class SPBeanDefinitionReader {
                 //beanName
                 //1：默认类名首字母小写
                 //2：自定义的名称   先查看是不是有自定义的名称 有就用 没有就默认为首字母小写
-                String beanName = beanClass.getAnnotation(SPController.class).value();
+                if(!(beanClass.isAnnotationPresent(SPController.class) || beanClass.isAnnotationPresent(SPService.class))) continue;
+                String beanName = beanClass.isAnnotationPresent(SPController.class) ? beanClass.getAnnotation(SPController.class).value() : beanClass.getAnnotation(SPService.class).value();
                 //如果注解上有值 则以注解上面的值为准
                 beanName = "".equals(beanName) ? toLowerFirstCase(beanClass.getSimpleName()) : beanName;
-                result.add(doCreateBeanDefinition(toLowerFirstCase(beanName),beanClass.getName()));
+                result.add(doCreateBeanDefinition(beanName,beanClass.getName()));
 
                 //3：接口注入
                 for (Class<?> i : beanClass.getInterfaces()) {

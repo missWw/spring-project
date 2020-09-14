@@ -17,7 +17,7 @@ import java.util.*;
 
 public class SPDispatchServlet extends HttpServlet {
 
-    private SPApplicationContext SPApplicationContext;
+    private SPApplicationContext applicationContext;
 
     private List<String> classNames = new ArrayList<String>();
 
@@ -105,7 +105,7 @@ public class SPDispatchServlet extends HttpServlet {
     @Override
     public void init(ServletConfig config) throws ServletException {
 
-        SPApplicationContext = new SPApplicationContext(config.getInitParameter("contextConfigLocation"));
+        applicationContext = new SPApplicationContext(config.getInitParameter("contextConfigLocation"));
 
         /*//1:加载配置文件
         doLoadConfig(config);
@@ -125,96 +125,13 @@ public class SPDispatchServlet extends HttpServlet {
         System.out.println("MVC Framework is init");
     }
 
-
-
-
-
-    private void doInstance() {
-        if (classNames.isEmpty()) {
-            return;
-        }
-        try {
-            for (String className : classNames) {
-                Class<?> clazz = Class.forName(className);
-                //isAnnotationPresent 类上是否有该参数类型的注解
-                if (clazz.isAnnotationPresent(SPController.class)) {
-                    //有就把value取出来
-                    String beanName = toLowerFirstCase(clazz.getSimpleName());
-                    System.out.println("WController:" + beanName);
-                    Object instance = clazz.newInstance();
-                    ioc.put(beanName, instance);
-                } else if (clazz.isAnnotationPresent(SPService.class)) {
-
-                    //1、在多个包下出现相同的类名，只能寄几（自己）起一个全局唯一的名字
-                    //有自定义命名用自定义的 没有用类名首字母小写
-                    String beanName = clazz.getAnnotation(SPService.class).value();
-                    System.out.println("WService:" + beanName);
-                    //如果注解上有值 则以注解上面的值为准
-                    beanName = "".equals(beanName) ? toLowerFirstCase(clazz.getSimpleName()) : beanName;
-
-                    Object instance = clazz.newInstance();
-                    ioc.put(beanName, instance);
-
-                    //3、如果是接口
-                    //判断有多少个实现类，如果只有一个，默认就选择这个实现类
-                    //如果有多个，只能抛异常
-                    //如果class有实现接口 那就把接口的包名+类名作为bean名称加入到ioc容器里面
-                    for (Class<?> i : clazz.getInterfaces()) {
-                        if (ioc.containsKey((i.getName()))) {
-                            throw new Exception("The " + i.getName() + " is exists!!");
-                        }
-                        ioc.put(i.getName(), instance);
-                    }
-                }
-
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    private void doAutowired() {
-        //如果ioc容器为空 则表示没有初始化
-        if (ioc.isEmpty()) return;
-
-        //初始化IoC容器里面的类的属性注入
-        //把所有的包括private/protected/default/public 修饰字段都取出来
-        for (Map.Entry<String, Object> entry : ioc.entrySet()) {
-
-            //遍历类的所有属性
-            for (Field field : entry.getValue().getClass().getDeclaredFields()) {
-                if (!field.isAnnotationPresent(SPAutowired.class)) return;
-
-                SPAutowired SPAutowired = field.getAnnotation(SPAutowired.class);
-
-                String beanName = SPAutowired.value().trim();
-                //如果autowired没有设置value 则使用属性名
-                if ("".equals(beanName)) {
-                    beanName = field.getType().getName();
-                }
-
-                field.setAccessible(true);
-
-                try {
-                    //设置属性值为 ioc容器的实例
-                    field.set(entry.getValue(), ioc.get(beanName));
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-
-    }
-
     private void initHandleMapping() {
 
-        if (ioc.isEmpty()) return;
-
-        for (Map.Entry<String, Object> entry : ioc.entrySet()) {
+        if (this.applicationContext.getBeanDefinitionCount() <= 0) return;
+        String[] names = this.applicationContext.getBeanDefinitionNames();
+        for (String beanName : names) {
             //获取IoC容器的对象
-            Class clazz = entry.getValue().getClass();
+            Class clazz = this.applicationContext.getBean(beanName).getClass();
 
             //如果类上面没有Controller的注解 则返回
             if (!clazz.isAnnotationPresent(SPController.class)) return;
@@ -251,6 +168,5 @@ public class SPDispatchServlet extends HttpServlet {
         chars[0] += 32;
         return String.valueOf(chars);
     }
-
 
 }
