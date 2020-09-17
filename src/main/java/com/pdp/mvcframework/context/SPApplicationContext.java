@@ -11,6 +11,7 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 public class SPApplicationContext {
 
@@ -43,9 +44,7 @@ public class SPApplicationContext {
 
         for (Map.Entry<String, SPBeanDefinition> entry : beanDefinitionMap.entrySet()) {
             String beanName = entry.getKey();
-
             getBean(beanName);
-
         }
 
     }
@@ -116,11 +115,16 @@ public class SPApplicationContext {
 
             try {
 
-                if(factoryBeanInstanceCache.containsKey(autowiredBeanName)){
-                   continue;
+                //解决循环依赖 如果没有就看BeanDefinition里有没有相关定义 有就获取相对应的实例
+                if(!this.factoryBeanInstanceCache.containsKey(autowiredBeanName)){
+                    if(this.beanDefinitionMap.containsKey(autowiredBeanName)){
+                        Object autowiredInstance = this.getBean(autowiredBeanName);
+                        field.set(instance,autowiredInstance);
+                    }
+                    continue;
                 }
 
-                field.set(instance, this.factoryBeanInstanceCache.get(autowiredBeanName));
+                field.set(instance, this.factoryBeanInstanceCache.get(autowiredBeanName).getWrapperInstance());
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
@@ -166,5 +170,9 @@ public class SPApplicationContext {
 
     public String[] getBeanDefinitionNames() {
         return this.beanDefinitionMap.keySet().toArray(new String[this.beanDefinitionMap.size()]);
+    }
+
+    public Properties getConfig() {
+        return this.reader.getConfig();
     }
 }

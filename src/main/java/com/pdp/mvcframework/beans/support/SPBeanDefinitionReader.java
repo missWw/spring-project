@@ -104,6 +104,10 @@ public class SPBeanDefinitionReader {
         }
 
     }
+
+    public Properties getConfig() {
+        return this.properties;
+    }
 }
 
 
