@@ -30,13 +30,13 @@ public class SPApplicationContext {
         try {
             //2:解析配置文件 封装成BeanDefinition  全类名和类名小写的BeanDefinition
             List<SPBeanDefinition> SPBeanDefinitions = reader.loadBeanDefinitions();
-            //3:把BeanDefinition缓存起来
 
+            //3:把BeanDefinition缓存起来
             doRegistBeanDefinition(SPBeanDefinitions);
         } catch (Exception e) {
             e.printStackTrace();
         }
-
+        //4:依赖注入
         doAutowired();
     }
 
