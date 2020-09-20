@@ -3,6 +3,9 @@ package com.pdp.mvcframework.context;
 import com.pdp.mvcframework.annotation.SPAutowired;
 import com.pdp.mvcframework.annotation.SPController;
 import com.pdp.mvcframework.annotation.SPService;
+import com.pdp.mvcframework.aop.SPJdkDynamicAopProxy;
+import com.pdp.mvcframework.aop.config.SPAopConfig;
+import com.pdp.mvcframework.aop.support.SPAdvisedSupport;
 import com.pdp.mvcframework.beans.SPBeanWrapper;
 import com.pdp.mvcframework.beans.config.SPBeanDefinition;
 import com.pdp.mvcframework.beans.support.SPBeanDefinitionReader;
@@ -70,7 +73,7 @@ public class SPApplicationContext {
         //2：反射实例化
         Object instance = instantinitBean(beanName, beanDefinition);
 
-        System.out.println("beanName:"+beanName+"  对应的实例："+instance);
+        //System.out.println("beanName:"+beanName+"  对应的实例："+instance);
 
         //3：封装成BeanWrapper
         SPBeanWrapper beanWrapper = new SPBeanWrapper(instance);
@@ -134,7 +137,6 @@ public class SPApplicationContext {
     }
 
     private Object instantinitBean(String beanName, SPBeanDefinition beanDefinition) {
-        String className = beanDefinition.getBeanClassName();
         Object instance = null;
         try {
             String  factoryBeanName = beanDefinition.getFactoryBeanName();
@@ -144,8 +146,22 @@ public class SPApplicationContext {
                 instance = factoryBeanObjectCache.containsKey(beanClassName) ?  factoryBeanObjectCache.get(beanClassName) : factoryBeanObjectCache.get(factoryBeanName);
                 this.factoryBeanObjectCache.put(beanClassName, instance);
             }else {
-                Class clazz = Class.forName(className);
+                Class clazz = Class.forName(beanClassName);
                 instance = clazz.newInstance();
+
+                //==================AOP开始===================
+                //加载AOP配置文件
+                SPAdvisedSupport config = instantionAopConfig(beanDefinition);
+                config.setTargetClass(clazz);
+                config.setTarget(instance);
+
+                //根据规则 是生成原生对象还是代理对象
+                //如果是代理对象就覆盖掉原生对象
+                if(config.pointCutMath()){
+                    instance = new SPJdkDynamicAopProxy(config).getProxy();
+                }
+                //==================AOP结束===================
+
                 this.factoryBeanObjectCache.put(beanClassName, instance);
             }
         } catch (ClassNotFoundException e) {
@@ -157,6 +173,17 @@ public class SPApplicationContext {
         }
 
         return instance;
+    }
+
+    private SPAdvisedSupport instantionAopConfig(SPBeanDefinition beanDefinition) {
+        SPAopConfig config = new SPAopConfig();
+        config.setPointCut(this.reader.getConfig().getProperty("pointCut"));
+        config.setAspectClass(this.reader.getConfig().getProperty("aspectClass"));
+        config.setAspectBefore(this.reader.getConfig().getProperty("aspectBefore"));
+        config.setAspectAfterThrow(this.reader.getConfig().getProperty("aspectAfterThrow"));
+        config.setAspectAfterThrowingName(this.reader.getConfig().getProperty("aspectAfterThrowingName"));
+        config.setAspectAfter(this.reader.getConfig().getProperty("aspectAfter"));
+        return new SPAdvisedSupport(config);
     }
 
 

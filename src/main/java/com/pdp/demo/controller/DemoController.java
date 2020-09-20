@@ -10,6 +10,9 @@ import com.pdp.mvcframework.mvcweb.v2.servlet.SPModelAndView;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 
 //虽然，用法一样，但是没有功能
@@ -20,47 +23,21 @@ public class DemoController {
     @SPAutowired
     private IDemoService demoService;
 
-    @SPRequestMapping("/query")
-    public void query(HttpServletRequest req, HttpServletResponse resp,
-                      @SPRequestParam("name") String name) {
-        String result = demoService.get(name);
-//		String result = "My name is " + name;
-        try {
-            resp.getWriter().write(result);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @SPRequestMapping("/add1")
-    public void add(HttpServletRequest req, HttpServletResponse resp,
-                    @SPRequestParam("a") Integer a, @SPRequestParam("b") Integer b) {
-        try {
-            resp.getWriter().write(a + "+" + b + "=" + (a + b));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @SPRequestMapping("/sub")
-    public void add(HttpServletRequest req, HttpServletResponse resp,
-                    @SPRequestParam("a") Double a, @SPRequestParam("b") Double b) {
-        try {
-            resp.getWriter().write(a + "-" + b + "=" + (a - b));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @SPRequestMapping("/remove")
-    public String remove(@SPRequestParam("id") Integer id) {
-        return "" + id;
-    }
+    
 
     @SPRequestMapping("/add*.json")
     public SPModelAndView add(HttpServletRequest request, HttpServletResponse response,
                               @SPRequestParam("name") String name) {
-        String result = name + "name ";
+        String result = null;
+        try {
+            result = demoService.add(name);
+        } catch (Exception e) {
+
+            Map<String,String> model = new HashMap<String,String>();
+            model.put("detail",e.getCause().getMessage());
+            model.put("stackTrace", Arrays.toString(e.getStackTrace()));
+            return new SPModelAndView("500",model);
+        }
         return out(response, result);
     }
 

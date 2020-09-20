@@ -1,6 +1,7 @@
 package com.pdp.demo.controller;
 
-import com.pdp.demo.service.QueryService;
+import com.pdp.demo.service.IQueryService;
+import com.pdp.demo.service.impl.QueryService;
 import com.pdp.mvcframework.annotation.SPAutowired;
 import com.pdp.mvcframework.annotation.SPController;
 import com.pdp.mvcframework.annotation.SPRequestMapping;
@@ -20,7 +21,7 @@ import java.util.Map;
 public class PageController {
 
     @SPAutowired
-    QueryService queryService;
+    IQueryService queryService;
 
     @SPRequestMapping("/first.html")
     public SPModelAndView query(@SPRequestParam("teacher") String teacher){

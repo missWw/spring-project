@@ -1,5 +1,6 @@
-package com.pdp.demo.service;
+package com.pdp.demo.service.impl;
 
+import com.pdp.demo.service.IQueryService;
 import com.pdp.mvcframework.annotation.SPService;
 import lombok.extern.slf4j.Slf4j;
 
@@ -13,7 +14,7 @@ import java.util.Date;
  */
 @SPService
 @Slf4j
-public class QueryService {
+public class QueryService implements IQueryService {
 
 	/**
 	 * 查询
@@ -25,5 +26,5 @@ public class QueryService {
 		log.info("这是在业务方法中打印的：" + json);
 		return json;
 	}
-
+	
 }

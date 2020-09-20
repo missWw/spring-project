@@ -13,4 +13,9 @@ public class DemoService implements IDemoService {
 		return "My name is " + name + ",from service.";
 	}
 
+	public String add(String name) throws Exception{
+		throw new Exception("这是故意抛出来的异常");
+	}
+
+
 }
